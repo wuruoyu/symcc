@@ -61,8 +61,8 @@ bool SymbolizePass::runOnFunction(Function &F) {
   if (functionName == kSymCtorName)
     return false;
 
-  DEBUG(errs() << "Symbolizing function ");
-  DEBUG(errs().write_escaped(functionName) << '\n');
+  //DEBUG(errs() << "Symbolizing function ");
+  //DEBUG(errs().write_escaped(functionName) << '\n');
 
   SmallVector<Instruction *, 0> allInstructions;
   allInstructions.reserve(F.getInstructionCount());
