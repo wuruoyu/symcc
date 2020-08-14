@@ -371,7 +371,8 @@ void Symbolizer::visitSelectInst(SelectInst &I) {
   auto runtimeCall = buildRuntimeCall(IRB, runtime.pushPathConstraint,
                                       {{I.getCondition(), true},
                                        {I.getCondition(), false},
-                                       {getTargetPreferredInt(&I), false}});
+                                       {getTargetPreferredInt(&I), false},
+                                       {IRB.getInt1(false), false}});
   registerSymbolicComputation(runtimeCall);
 }
 
@@ -410,6 +411,14 @@ void Symbolizer::visitBranchInst(BranchInst &I) {
   if (I.isUnconditional())
     return;
 
+  errs() << "Instruction: " << I << "\n";
+
+  /*if (MDNode* metaNode = I.getMetadata("div")) {*/
+    //errs() << "Instruction: " << I << "  "
+           //<< "Instrument type: " << cast<MDString>(metaNode->getOperand(0))->getString() 
+           //<< "\n";
+  /*}*/
+
   IRBuilder<> IRB(&I);
   // RUOYU: only target the numeric instrumented code
   if (MDNode* metaNode = I.getMetadata("numeric")) {
@@ -421,7 +430,7 @@ void Symbolizer::visitBranchInst(BranchInst &I) {
                                         {I.getCondition(), false},
                                         {getTargetPreferredInt(&I), false},
                                         // numeric argument
-                                        {true, false}});
+                                        {IRB.getInt1(true), false}});
     registerSymbolicComputation(runtimeCall);
   }
   else {
@@ -429,7 +438,8 @@ void Symbolizer::visitBranchInst(BranchInst &I) {
     auto runtimeCall = buildRuntimeCall(IRB, runtime.pushPathConstraint,
                                         {{I.getCondition(), true},
                                         {I.getCondition(), false},
-                                        {getTargetPreferredInt(&I), false}});
+                                        {getTargetPreferredInt(&I), false},
+                                        {IRB.getInt1(false), false}});
     registerSymbolicComputation(runtimeCall);
   }
 }
@@ -812,7 +822,7 @@ void Symbolizer::visitSwitchInst(SwitchInst &I) {
         runtime.comparisonHandlers[CmpInst::ICMP_EQ],
         {conditionExpr, createValueExpression(caseHandle.getCaseValue(), IRB)});
     IRB.CreateCall(runtime.pushPathConstraint,
-                   {caseConstraint, caseTaken, getTargetPreferredInt(&I)});
+                   {caseConstraint, caseTaken, getTargetPreferredInt(&I), IRB.getInt1(false)});
   }
 }
 
@@ -925,7 +935,7 @@ void Symbolizer::tryAlternative(IRBuilder<> &IRB, Value *V) {
                        {destExpr, concreteDestExpr});
     auto *pushAssertion = IRB.CreateCall(
         runtime.pushPathConstraint,
-        {destAssertion, IRB.getInt1(true), getTargetPreferredInt(V)});
+        {destAssertion, IRB.getInt1(true), getTargetPreferredInt(V), IRB.getInt1(false)});
     registerSymbolicComputation(SymbolicComputation(
         concreteDestExpr, pushAssertion, {{V, 0, destAssertion}}));
   }

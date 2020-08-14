@@ -46,7 +46,7 @@ void tryAlternative(V value, SymExpr valueExpr, F caller) {
     _sym_push_path_constraint(
         _sym_build_equal(valueExpr,
                          _sym_build_integer(value, sizeof(value) * 8)),
-        true, reinterpret_cast<uintptr_t>(caller));
+        true, reinterpret_cast<uintptr_t>(caller), false);
   }
 }
 
@@ -376,7 +376,7 @@ const char *SYM(strchr)(const char *s, int c) {
         _sym_build_not_equal(
             (*shadowIt != nullptr) ? *shadowIt : _sym_build_integer(s[i], 8),
             cExpr),
-        /*taken*/ 1, reinterpret_cast<uintptr_t>(SYM(strchr)));
+        /*taken*/ 1, reinterpret_cast<uintptr_t>(SYM(strchr)), false);
     ++shadowIt;
   }
 
@@ -405,7 +405,7 @@ int SYM(memcmp)(const void *a, const void *b, size_t n) {
   }
 
   _sym_push_path_constraint(allEqual, result == 0,
-                            reinterpret_cast<uintptr_t>(SYM(memcmp)));
+                            reinterpret_cast<uintptr_t>(SYM(memcmp)), false);
   return result;
 }
 }

@@ -411,7 +411,7 @@ Z3_ast _sym_build_bool_to_bits(Z3_ast expr, uint8_t bits) {
 
 void _sym_push_path_constraint(Z3_ast constraint, int taken,
                                uintptr_t site_id [[maybe_unused]],
-                               bool numeric=false) {
+                               bool numeric) {
   if (constraint == nullptr)
     return;
 
@@ -433,6 +433,9 @@ void _sym_push_path_constraint(Z3_ast constraint, int taken,
     Z3_dec_ref(g_context, constraint);
     return;
   }
+
+  // for debug
+  //numeric = true;
 
   if (numeric) {
     /* Generate a solution for the alternative */
