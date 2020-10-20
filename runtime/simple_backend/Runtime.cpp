@@ -414,7 +414,8 @@ Z3_ast _sym_build_bool_to_bits(Z3_ast expr, uint8_t bits) {
 }
 
 void _sym_push_path_constraint(Z3_ast constraint, int taken,
-                               uintptr_t site_id [[maybe_unused]]) {
+                               uintptr_t site_id [[maybe_unused]],
+                               bool numeric=false) {
   if (constraint == nullptr)
     return;
 
@@ -437,38 +438,40 @@ void _sym_push_path_constraint(Z3_ast constraint, int taken,
     return;
   }
 
-  /* Generate a solution for the alternative */
-  Z3_ast not_constraint =
-      Z3_simplify(g_context, Z3_mk_not(g_context, constraint));
-  Z3_inc_ref(g_context, not_constraint);
+  if (numeric) {
+    /* Generate a solution for the alternative */
+    Z3_ast not_constraint =
+        Z3_simplify(g_context, Z3_mk_not(g_context, constraint));
+    Z3_inc_ref(g_context, not_constraint);
 
-  Z3_solver_push(g_context, g_solver);
-  Z3_solver_assert(g_context, g_solver, taken ? not_constraint : constraint);
-  fprintf(g_log, "Trying to solve:\n%s\n",
-          Z3_solver_to_string(g_context, g_solver));
+    Z3_solver_push(g_context, g_solver);
+    Z3_solver_assert(g_context, g_solver, taken ? not_constraint : constraint);
+    fprintf(g_log, "Trying to solve:\n%s\n",
+            Z3_solver_to_string(g_context, g_solver));
 
-  Z3_lbool feasible = Z3_solver_check(g_context, g_solver);
-  if (feasible == Z3_L_TRUE) {
-    Z3_model model = Z3_solver_get_model(g_context, g_solver);
-    Z3_model_inc_ref(g_context, model);
-    fprintf(g_log, "Found diverging input:\n%s\n",
+    Z3_lbool feasible = Z3_solver_check(g_context, g_solver);
+    if (feasible == Z3_L_TRUE) {
+      Z3_model model = Z3_solver_get_model(g_context, g_solver);
+      Z3_model_inc_ref(g_context, model);
+      fprintf(g_log, "Found diverging input:\n%s\n",
             Z3_model_to_string(g_context, model));
-    Z3_model_dec_ref(g_context, model);
-  } else {
-    fprintf(g_log, "Can't find a diverging input at this point\n");
+      Z3_model_dec_ref(g_context, model);
+    } else {
+      fprintf(g_log, "Can't find a diverging input at this point\n");
+    }
+    fflush(g_log);
+
+    Z3_solver_pop(g_context, g_solver, 1);
+
+    /* Assert the actual path constraint */
+    Z3_ast newConstraint = (taken ? constraint : not_constraint);
+    Z3_inc_ref(g_context, newConstraint);
+    Z3_solver_assert(g_context, g_solver, newConstraint);
+    assert((Z3_solver_check(g_context, g_solver) == Z3_L_TRUE) &&
+           "Asserting infeasible path constraint");
+    Z3_dec_ref(g_context, constraint);
+    Z3_dec_ref(g_context, not_constraint);
   }
-  fflush(g_log);
-
-  Z3_solver_pop(g_context, g_solver, 1);
-
-  /* Assert the actual path constraint */
-  Z3_ast newConstraint = (taken ? constraint : not_constraint);
-  Z3_inc_ref(g_context, newConstraint);
-  Z3_solver_assert(g_context, g_solver, newConstraint);
-  assert((Z3_solver_check(g_context, g_solver) == Z3_L_TRUE) &&
-         "Asserting infeasible path constraint");
-  Z3_dec_ref(g_context, constraint);
-  Z3_dec_ref(g_context, not_constraint);
 }
 
 SymExpr _sym_concat_helper(SymExpr a, SymExpr b) {

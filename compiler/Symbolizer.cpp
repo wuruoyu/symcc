@@ -20,6 +20,7 @@
 #include <llvm/IR/GetElementPtrTypeIterator.h>
 #include <llvm/IR/Intrinsics.h>
 #include <llvm/Transforms/Utils/BasicBlockUtils.h>
+#include <llvm/IR/Metadata.h>
 
 #include "Runtime.h"
 
@@ -417,11 +418,27 @@ void Symbolizer::visitBranchInst(BranchInst &I) {
     return;
 
   IRBuilder<> IRB(&I);
-  auto runtimeCall = buildRuntimeCall(IRB, runtime.pushPathConstraint,
-                                      {{I.getCondition(), true},
-                                       {I.getCondition(), false},
-                                       {getTargetPreferredInt(&I), false}});
-  registerSymbolicComputation(runtimeCall);
+  // RUOYU: only target the numeric instrumented code
+  if (MDNode* metaNode = I.getMetadata("numeric")) {
+    errs() << "Instruction: " << I << "  "
+           << "Instrument type: " << cast<MDString>(metaNode->getOperand(0))->getString() 
+           << "\n";
+    auto runtimeCall = buildRuntimeCall(IRB, runtime.pushPathConstraint,
+                                        {{I.getCondition(), true},
+                                        {I.getCondition(), false},
+                                        {getTargetPreferredInt(&I), false},
+                                        // numeric argument
+                                        {true, false}});
+    registerSymbolicComputation(runtimeCall);
+  }
+  else {
+    // default: numeric=false
+    auto runtimeCall = buildRuntimeCall(IRB, runtime.pushPathConstraint,
+                                        {{I.getCondition(), true},
+                                        {I.getCondition(), false},
+                                        {getTargetPreferredInt(&I), false}});
+    registerSymbolicComputation(runtimeCall);
+  }
 }
 
 void Symbolizer::visitIndirectBrInst(IndirectBrInst &I) {
