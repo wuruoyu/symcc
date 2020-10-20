@@ -418,7 +418,7 @@ void Symbolizer::visitBranchInst(BranchInst &I) {
   if (I.isUnconditional())
     return;
 
-  errs() << "Instruction: " << I << "\n";
+  //errs() << "Instruction: " << I << "\n";
 
   /*if (MDNode* metaNode = I.getMetadata("div")) {*/
     //errs() << "Instruction: " << I << "  "
@@ -429,9 +429,9 @@ void Symbolizer::visitBranchInst(BranchInst &I) {
   IRBuilder<> IRB(&I);
   // RUOYU: only target the numeric instrumented code
   if (MDNode* metaNode = I.getMetadata("numeric")) {
-    errs() << "Instruction: " << I << "  "
-           << "Instrument type: " << cast<MDString>(metaNode->getOperand(0))->getString() 
-           << "\n";
+    //errs() << "Instruction: " << I << "  "
+           //<< "Instrument type: " << cast<MDString>(metaNode->getOperand(0))->getString() 
+           /*<< "\n";*/
     auto runtimeCall = buildRuntimeCall(IRB, runtime.pushPathConstraint,
                                         {{I.getCondition(), true},
                                         {I.getCondition(), false},
@@ -446,6 +446,7 @@ void Symbolizer::visitBranchInst(BranchInst &I) {
                                         {{I.getCondition(), true},
                                         {I.getCondition(), false},
                                         {getTargetPreferredInt(&I), false},
+                                        // numeric argument
                                         {IRB.getInt1(false), false}});
     registerSymbolicComputation(runtimeCall);
   }
