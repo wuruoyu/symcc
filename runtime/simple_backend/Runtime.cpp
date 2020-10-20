@@ -452,8 +452,6 @@ void _sym_push_path_constraint(Z3_ast constraint, int taken,
       Z3_simplify(g_context, Z3_mk_not(g_context, constraint));
   Z3_inc_ref(g_context, not_constraint);
 
-  fprintf(g_log, "sym_path asserting\n");
-
   if (numeric) {
     /* Generate a solution for the alternative */
     Z3_solver_push(g_context, g_solver);
@@ -481,6 +479,7 @@ void _sym_push_path_constraint(Z3_ast constraint, int taken,
     Z3_solver_pop(g_context, g_solver, 1);
 
     /* Assert the actual path constraint */
+    fprintf(g_log, "sym_path asserting\n");
     Z3_ast newConstraint = (taken ? constraint : not_constraint);
     Z3_inc_ref(g_context, newConstraint);
     Z3_solver_assert(g_context, g_solver, newConstraint);
