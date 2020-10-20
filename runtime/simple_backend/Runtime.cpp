@@ -448,7 +448,6 @@ void _sym_push_path_constraint(Z3_ast constraint, int taken,
   // for debug
   //numeric = true;
 
-<<<<<<< HEAD
   Z3_ast not_constraint =
       Z3_simplify(g_context, Z3_mk_not(g_context, constraint));
   Z3_inc_ref(g_context, not_constraint);
