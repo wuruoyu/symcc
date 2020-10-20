@@ -428,10 +428,11 @@ void Symbolizer::visitBranchInst(BranchInst &I) {
 
   IRBuilder<> IRB(&I);
   // RUOYU: only target the numeric instrumented code
-  if (MDNode* metaNode = I.getMetadata("numeric")) {
-    //errs() << "Instruction: " << I << "  "
-           //<< "Instrument type: " << cast<MDString>(metaNode->getOperand(0))->getString() 
-           /*<< "\n";*/
+  //if (MDNode* metaNode = I.getMetadata("numeric")) {
+  if (MDNode* metaNode = I.getMetadata("nosanitize")) {
+    errs() << "Instruction: " << I << "  "
+           << "Instrument type: " << cast<MDString>(metaNode->getOperand(0))->getString() 
+           << "\n";
     auto runtimeCall = buildRuntimeCall(IRB, runtime.pushPathConstraint,
                                         {{I.getCondition(), true},
                                         {I.getCondition(), false},
