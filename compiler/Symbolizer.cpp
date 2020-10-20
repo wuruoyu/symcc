@@ -446,7 +446,6 @@ void Symbolizer::visitBranchInst(BranchInst &I) {
                                         {{I.getCondition(), true},
                                         {I.getCondition(), false},
                                         {getTargetPreferredInt(&I), false},
-                                        // numeric argument
                                         {IRB.getInt1(false), false}});
     registerSymbolicComputation(runtimeCall);
   }

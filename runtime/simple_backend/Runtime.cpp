@@ -448,6 +448,7 @@ void _sym_push_path_constraint(Z3_ast constraint, int taken,
   // for debug
   //numeric = true;
 
+<<<<<<< HEAD
   Z3_ast not_constraint =
       Z3_simplify(g_context, Z3_mk_not(g_context, constraint));
   Z3_inc_ref(g_context, not_constraint);
@@ -485,7 +486,7 @@ void _sym_push_path_constraint(Z3_ast constraint, int taken,
     Z3_inc_ref(g_context, newConstraint);
     Z3_solver_assert(g_context, g_solver, newConstraint);
     assert((Z3_solver_check(g_context, g_solver) == Z3_L_TRUE) &&
-           "Asserting infeasible path constraint");
+          "Asserting infeasible path constraint");
     Z3_dec_ref(g_context, constraint);
     Z3_dec_ref(g_context, not_constraint);
   }
